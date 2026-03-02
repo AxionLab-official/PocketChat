@@ -5,156 +5,274 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>💬 PocketChat — IA Local no Navegador</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&family=Geist:wght@300;400;500;600&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&family=Geist:wght@300;400;500;600;700&display=swap" />
   <style>
     :root {
-      --bg:         #f5f4f0; --surface:    #ffffff; --surface2:   #efefeb;
-      --border:     #ddddd8; --border2:    #c8c8c2;
-      --accent:     #2563eb; --accent-dim: #dbeafe;
-      --user-bg:    #2563eb; --user-text:  #ffffff;
-      --bot-bg:     #ffffff; --bot-text:   #1a1a1a;
-      --text:       #1a1a1a; --muted:      #888884;
-      --think-bg:   #fafaf7; --think-bd:   #e0e0d8; --think-text: #666660;
+      --bg:         #f5f4f0; --surface:  #ffffff; --surface2: #efefeb; --surface3: #e8e8e3;
+      --border:     #ddddd8; --border2:  #c8c8c2;
+      --accent:     #2563eb; --accent-d: #1d4ed8; --accent-dim: #dbeafe;
+      --user-bg:    #2563eb; --user-text:#ffffff;
+      --bot-bg:     #ffffff; --bot-text: #1a1a1a;
+      --text:       #1a1a1a; --muted:    #888884; --muted2: #aaa;
+      --ok:         #16a34a; --ok-bg:    #f0fdf4; --ok-bd:  #bbf7d0;
+      --warn:       #d97706; --warn-bg:  #fffbeb; --warn-bd:#fde68a;
+      --err:        #dc2626; --err-bg:   #fef2f2; --err-bd: #fecaca;
+      --think-bg:   #fafaf7; --think-bd: #e0e0d8; --think-text: #666660;
       --radius:     16px;
       --shadow:     0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.05);
+      --shadow-md:  0 4px 12px rgba(0,0,0,.1), 0 12px 32px rgba(0,0,0,.08);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Geist', sans-serif; overflow: hidden; -webkit-font-smoothing: antialiased; }
 
-    #app { display: flex; flex-direction: column; height: 100dvh; max-width: 740px; margin: 0 auto; background: var(--surface); box-shadow: 0 0 0 1px var(--border), var(--shadow); }
+    /* ═══════════════════════════════════════════════════════════
+       MODEL SELECTOR SCREEN
+    ═══════════════════════════════════════════════════════════ */
+    #selector-screen {
+      position: fixed; inset: 0; z-index: 100;
+      background: var(--bg);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 24px 16px 32px;
+      overflow-y: auto;
+      transition: opacity .3s;
+    }
+    #selector-screen.hidden { opacity: 0; pointer-events: none; }
 
-    /* ── Header ── */
-    header { flex-shrink: 0; padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: var(--surface); }
-    .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; color: #fff; }
-    .header-text { flex: 1; min-width: 0; }
-    .header-title { font-size: 1rem; font-weight: 600; letter-spacing: -.01em; }
-    .header-sub { font-size: .68rem; color: var(--muted); margin-top: 1px; font-family: 'Geist Mono', monospace; }
-    .header-actions { display: flex; align-items: center; gap: 8px; }
-    #clear-btn {
-      background: none; border: 1px solid var(--border); color: var(--muted);
-      font-size: .68rem; font-family: 'Geist Mono', monospace;
-      padding: 4px 9px; border-radius: 6px; cursor: pointer;
-      transition: border-color .2s, color .2s;
+    .selector-header { text-align: center; margin-bottom: 24px; max-width: 600px; width: 100%; }
+    .selector-logo { font-size: 2rem; margin-bottom: 8px; }
+    .selector-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+    .selector-sub { font-size: .85rem; color: var(--muted); line-height: 1.6; }
+
+    /* RAM badge */
+    .ram-detected {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: .78rem; font-family: 'Geist Mono', monospace;
+      margin-top: 14px; color: var(--muted);
     }
-    #clear-btn:hover { border-color: #dc2626; color: #dc2626; }
-    .status-pill {
-      display: flex; align-items: center; gap: 5px; font-size: .68rem; color: var(--muted);
+    .ram-detected .ram-val { color: var(--text); font-weight: 600; }
+
+    /* RAM input (when not detectable) */
+    .ram-input-row {
+      display: flex; align-items: center; gap: 8px; margin-top: 14px;
+    }
+    .ram-input-row label { font-size: .82rem; color: var(--muted); }
+    .ram-input-row select {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 5px 10px;
+      font-family: 'Geist', sans-serif; font-size: .82rem; color: var(--text);
+      outline: none; cursor: pointer;
+    }
+
+    /* Model grid */
+    .model-grid {
+      display: grid; gap: 14px; width: 100%; max-width: 680px;
+      grid-template-columns: 1fr;
+    }
+
+    .model-card {
+      background: var(--surface); border: 2px solid var(--border);
+      border-radius: 18px; padding: 18px 20px;
+      cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .12s;
+      position: relative; overflow: hidden;
+    }
+    .model-card:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.1); transform: translateY(-1px); }
+    .model-card.selected { border-color: var(--accent); background: #f0f6ff; }
+    .model-card.incompatible { opacity: .55; cursor: not-allowed; }
+    .model-card.incompatible:hover { border-color: var(--border); box-shadow: none; transform: none; }
+
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .card-left { display: flex; align-items: center; gap: 12px; }
+    .card-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .card-name { font-size: 1rem; font-weight: 600; letter-spacing: -.01em; }
+    .card-org  { font-size: .72rem; color: var(--muted); margin-top: 2px; font-family: 'Geist Mono', monospace; }
+
+    .compat-badge {
+      flex-shrink: 0; padding: 3px 9px; border-radius: 20px;
+      font-size: .68rem; font-weight: 600; letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    .compat-badge.ok   { background: var(--ok-bg);   color: var(--ok);   border: 1px solid var(--ok-bd); }
+    .compat-badge.warn { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-bd); }
+    .compat-badge.err  { background: var(--err-bg);  color: var(--err);  border: 1px solid var(--err-bd); }
+
+    .card-desc { font-size: .82rem; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+
+    .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
       background: var(--surface2); border: 1px solid var(--border);
-      padding: 4px 10px; border-radius: 20px; flex-shrink: 0; transition: all .3s;
+      border-radius: 6px; padding: 2px 8px;
+      font-size: .68rem; font-family: 'Geist Mono', monospace; color: var(--muted);
     }
-    .status-pill.ready  { color: #16a34a; background: #f0fdf4; border-color: #bbf7d0; }
-    .status-pill.loading{ color: #d97706; background: #fffbeb; border-color: #fde68a; }
-    .status-pill.typing { color: var(--accent); background: var(--accent-dim); border-color: #bfdbfe; }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .tag.highlight { background: var(--accent-dim); border-color: #bfdbfe; color: var(--accent); }
+
+    .card-footer {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: .75rem; color: var(--muted); font-family: 'Geist Mono', monospace;
+    }
+    .card-footer span { display: flex; align-items: center; gap: 4px; }
+
+    /* Watermark behind icon */
+    .card-watermark {
+      position: absolute; right: 14px; bottom: 10px;
+      font-size: 4rem; opacity: .04; pointer-events: none; user-select: none;
+    }
+
+    /* Load button */
+    #load-btn {
+      margin-top: 20px; padding: 13px 36px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 12px; font-size: 1rem; font-weight: 600;
+      font-family: 'Geist', sans-serif; cursor: pointer; letter-spacing: -.01em;
+      transition: background .15s, transform .1s, opacity .2s;
+    }
+    #load-btn:hover:not(:disabled) { background: var(--accent-d); }
+    #load-btn:active:not(:disabled) { transform: scale(.97); }
+    #load-btn:disabled { opacity: .4; cursor: default; }
+
+    /* ═══════════════════════════════════════════════════════════
+       LOADING OVERLAY
+    ═══════════════════════════════════════════════════════════ */
+    #loading-overlay {
+      position: fixed; inset: 0; z-index: 99;
+      background: rgba(245,244,240,.96); backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+      opacity: 0; pointer-events: none; transition: opacity .3s;
+    }
+    #loading-overlay.visible { opacity: 1; pointer-events: all; }
+
+    .load-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      padding: 32px 36px; display: flex; flex-direction: column; align-items: center; gap: 16px;
+      box-shadow: var(--shadow-md); max-width: 340px; width: 90%; text-align: center;
+    }
+    .load-icon { font-size: 36px; }
+    .load-title { font-size: 1rem; font-weight: 600; }
+    #load-text { font-size: .78rem; color: var(--muted); font-family: 'Geist Mono', monospace; line-height: 1.6; white-space: pre-line; }
+    #load-progress { width: 100%; height: 3px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    #load-bar { height: 100%; background: var(--accent); width: 0%; transition: width .3s; border-radius: 3px; }
+
+    /* ═══════════════════════════════════════════════════════════
+       CHAT APP
+    ═══════════════════════════════════════════════════════════ */
+    #app {
+      display: flex; flex-direction: column;
+      height: 100dvh; max-width: 740px; margin: 0 auto;
+      background: var(--surface); box-shadow: 0 0 0 1px var(--border), var(--shadow);
+      opacity: 0; pointer-events: none; transition: opacity .4s;
+    }
+    #app.visible { opacity: 1; pointer-events: all; }
+
+    header { flex-shrink: 0; padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: var(--surface); }
+    .h-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; color: #fff; }
+    .h-text { flex: 1; min-width: 0; }
+    .h-title { font-size: .95rem; font-weight: 600; letter-spacing: -.01em; }
+    .h-sub { font-size: .65rem; color: var(--muted); margin-top: 1px; font-family: 'Geist Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .h-actions { display: flex; align-items: center; gap: 6px; }
+    .h-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      font-size: .65rem; font-family: 'Geist Mono', monospace;
+      padding: 4px 8px; border-radius: 6px; cursor: pointer;
+      transition: border-color .2s, color .2s; white-space: nowrap;
+    }
+    .h-btn:hover { border-color: var(--accent); color: var(--accent); }
+    #switch-btn:hover { border-color: var(--err); color: var(--err); }
+
+    .status-pill { display: flex; align-items: center; gap: 5px; font-size: .65rem; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); padding: 3px 9px; border-radius: 20px; flex-shrink: 0; transition: all .3s; }
+    .status-pill.ready  { color: var(--ok);   background: var(--ok-bg);   border-color: var(--ok-bd); }
+    .status-pill.loading{ color: var(--warn);  background: var(--warn-bg); border-color: var(--warn-bd); }
+    .status-pill.typing { color: var(--accent);background: var(--accent-dim); border-color: #bfdbfe; }
+    .status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
     .status-pill.loading .status-dot, .status-pill.typing .status-dot { animation: blink .7s ease-in-out infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-    /* ── Messages ── */
-    #messages { flex: 1; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; }
+    #messages { flex: 1; overflow-y: auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
     #messages::-webkit-scrollbar { width: 4px; }
     #messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
     .msg { display: flex; gap: 10px; align-items: flex-start; animation: slide-up .2s cubic-bezier(.25,.46,.45,.94) both; }
     @keyframes slide-up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
     .msg.user { flex-direction: row-reverse; }
-
-    .msg-icon { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; margin-top: 2px; }
+    .msg-icon { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; margin-top: 2px; }
     .msg.user .msg-icon { background: var(--accent); color: #fff; }
     .msg.bot  .msg-icon { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-
-    .msg-body { display: flex; flex-direction: column; gap: 6px; max-width: 70%; }
+    .msg-body { display: flex; flex-direction: column; gap: 6px; max-width: 72%; }
     .msg.user .msg-body { align-items: flex-end; }
-
-    .bubble {
-      padding: 10px 14px; border-radius: var(--radius);
-      line-height: 1.65; font-size: .9rem; white-space: pre-wrap; word-break: break-word;
-    }
+    .bubble { padding: 10px 14px; border-radius: var(--radius); line-height: 1.65; font-size: .88rem; white-space: pre-wrap; word-break: break-word; }
     .msg.user .bubble { background: var(--user-bg); color: var(--user-text); border-bottom-right-radius: 4px; }
     .msg.bot  .bubble { background: var(--bot-bg); color: var(--bot-text); border: 1px solid var(--border); border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-
     .bubble.streaming::after { content: '▋'; animation: cur .6s step-end infinite; color: var(--accent); font-size: .8em; }
     @keyframes cur { 0%,100%{opacity:1} 50%{opacity:0} }
 
-    /* ── Think block ── */
-    .think-block {
-      background: var(--think-bg); border: 1px solid var(--think-bd);
-      border-radius: 10px; font-size: .78rem; color: var(--think-text);
-      font-family: 'Geist Mono', monospace; overflow: hidden;
-      transition: all .2s;
-    }
-    .think-block summary {
-      padding: 6px 10px; cursor: pointer; user-select: none;
-      display: flex; align-items: center; gap: 6px;
-      list-style: none; outline: none;
-      transition: background .15s;
-    }
+    /* Think block */
+    .think-block { background: var(--think-bg); border: 1px solid var(--think-bd); border-radius: 10px; font-size: .76rem; color: var(--think-text); font-family: 'Geist Mono', monospace; overflow: hidden; }
+    .think-block summary { padding: 6px 10px; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; list-style: none; outline: none; transition: background .15s; }
     .think-block summary::-webkit-details-marker { display: none; }
     .think-block summary:hover { background: rgba(0,0,0,.03); }
-    .think-block summary::before { content: '▶'; font-size: .6rem; transition: transform .2s; display: inline-block; }
+    .think-block summary::before { content: '▶'; font-size: .55rem; transition: transform .2s; display: inline-block; }
     .think-block[open] summary::before { transform: rotate(90deg); }
     .think-content { padding: 8px 10px 10px; border-top: 1px solid var(--think-bd); line-height: 1.6; white-space: pre-wrap; }
     .think-streaming .think-content::after { content: '▋'; animation: cur .6s step-end infinite; }
 
-    /* Typing dots */
     .typing-dots { display: inline-flex; gap: 4px; align-items: center; padding: 3px 2px; }
     .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); animation: bounce .9s ease-in-out infinite; }
     .typing-dots span:nth-child(2){animation-delay:.15s} .typing-dots span:nth-child(3){animation-delay:.30s}
     @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
 
-    .sys-msg { text-align: center; font-size: .68rem; font-family: 'Geist Mono', monospace; color: var(--muted); padding: 2px 0; }
+    .sys-msg { text-align: center; font-size: .65rem; font-family: 'Geist Mono', monospace; color: var(--muted); padding: 2px 0; }
     .sys-msg span { background: var(--surface2); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; }
 
-    /* ── Loading overlay ── */
-    #loading-overlay { position: fixed; inset: 0; z-index: 99; background: rgba(245,244,240,.96); backdrop-filter: blur(6px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; transition: opacity .4s; }
-    #loading-overlay.hidden { opacity: 0; pointer-events: none; }
-    .load-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px 36px; display: flex; flex-direction: column; align-items: center; gap: 16px; box-shadow: var(--shadow); max-width: 320px; width: 90%; text-align: center; }
-    .load-icon { font-size: 36px; }
-    .load-title { font-size: 1rem; font-weight: 600; letter-spacing: -.01em; }
-    .load-text { font-size: .78rem; color: var(--muted); font-family: 'Geist Mono', monospace; line-height: 1.6; white-space: pre-line; }
-    #load-progress { width: 100%; height: 3px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-    #load-bar { height: 100%; background: var(--accent); width: 0%; transition: width .3s; border-radius: 3px; }
-
-    /* ── Input bar ── */
-    #input-bar { flex-shrink: 0; padding: 12px 14px 14px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 8px; align-items: flex-end; }
-    #user-input {
-      flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
-      color: var(--text); font-family: 'Geist', sans-serif; font-size: .9rem;
-      padding: 10px 14px; resize: none; outline: none; line-height: 1.5; max-height: 120px;
-      transition: border-color .2s, box-shadow .2s;
-    }
+    #input-bar { flex-shrink: 0; padding: 10px 12px 12px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 8px; align-items: flex-end; }
+    #user-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'Geist', sans-serif; font-size: .88rem; padding: 10px 14px; resize: none; outline: none; line-height: 1.5; max-height: 120px; transition: border-color .2s, box-shadow .2s; }
     #user-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
     #user-input::placeholder { color: var(--muted); }
-    #send-btn {
-      flex-shrink: 0; width: 40px; height: 40px; border: none; border-radius: 10px;
-      background: var(--accent); color: #fff; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform .12s, opacity .2s, background .15s;
-    }
-    #send-btn:hover:not(:disabled){background:#1d4ed8} #send-btn:active:not(:disabled){transform:scale(.92)} #send-btn:disabled{opacity:.35;cursor:default}
-    @media(max-width:500px){.msg-body{max-width:88%} #app{box-shadow:none}}
+    #send-btn { flex-shrink: 0; width: 40px; height: 40px; border: none; border-radius: 10px; background: var(--accent); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .12s, opacity .2s, background .15s; }
+    #send-btn:hover:not(:disabled){background:var(--accent-d)} #send-btn:active:not(:disabled){transform:scale(.92)} #send-btn:disabled{opacity:.35;cursor:default}
+
+    @media(max-width:500px){ .msg-body{max-width:86%} #app{box-shadow:none} .model-grid{grid-template-columns:1fr} }
+    @media(min-width:600px){ .model-grid{grid-template-columns:1fr 1fr} }
   </style>
 </head>
 <body>
-<div id="app">
 
-  <div id="loading-overlay">
-    <div class="load-card">
-      <div class="load-icon">💬</div>
-      <div class="load-title">Carregando PocketChat</div>
-      <div class="load-text" id="load-text">Iniciando WebGPU…
-Qwen3-0.6B q4f16 (~380MB)</div>
-      <div id="load-progress"><div id="load-bar"></div></div>
-    </div>
+<!-- ── Model Selector ── -->
+<div id="selector-screen">
+  <div class="selector-header">
+    <div class="selector-logo">💬</div>
+    <div class="selector-title">PocketChat</div>
+    <div class="selector-sub">IA 100% local no navegador · Sem servidor, sem API key, sem internet após o download.<br>Escolha um modelo abaixo de acordo com o seu hardware.</div>
+    <div id="ram-display"><!-- preenchido por JS --></div>
   </div>
 
+  <div class="model-grid" id="model-grid"><!-- cards gerados por JS --></div>
+
+  <button id="load-btn" disabled>Carregar modelo selecionado</button>
+</div>
+
+<!-- ── Loading overlay ── -->
+<div id="loading-overlay">
+  <div class="load-card">
+    <div class="load-icon" id="load-icon">⏳</div>
+    <div class="load-title" id="load-title">Carregando modelo…</div>
+    <div id="load-text">Iniciando WebGPU…</div>
+    <div id="load-progress"><div id="load-bar"></div></div>
+  </div>
+</div>
+
+<!-- ── Chat app ── -->
+<div id="app">
   <header>
-    <div class="avatar">💬</div>
-    <div class="header-text">
-      <div class="header-title">PocketChat</div>
-      <div class="header-sub">Qwen3-0.6B · WebGPU · 100% local, sem servidor</div>
+    <div class="h-avatar" id="h-avatar">💬</div>
+    <div class="h-text">
+      <div class="h-title" id="h-title">PocketChat</div>
+      <div class="h-sub"  id="h-sub">…</div>
     </div>
-    <div class="header-actions">
-      <button id="clear-btn">limpar</button>
+    <div class="h-actions">
+      <button class="h-btn" id="clear-btn">limpar</button>
+      <button class="h-btn" id="switch-btn" title="Trocar modelo (recarrega a página)">trocar modelo</button>
       <div class="status-pill loading" id="status-pill">
         <div class="status-dot"></div>
         <span id="status-label">carregando</span>
@@ -162,90 +280,328 @@ Qwen3-0.6B q4f16 (~380MB)</div>
     </div>
   </header>
 
-  <div id="messages">
-    <div class="sys-msg"><span>modelo carregando…</span></div>
-  </div>
+  <div id="messages"></div>
 
   <div id="input-bar">
     <textarea id="user-input" rows="1" placeholder="Digite sua mensagem…" disabled></textarea>
     <button id="send-btn" disabled>
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M2 8L14 8M14 8L9 3M14 8L9 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+        <path d="M2 8L14 8M14 8L9 3M14 8L9 13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
   </div>
-
 </div>
+
 <script type="module">
 import { pipeline, TextStreamer, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3/dist/transformers.min.js';
 
 env.allowLocalModels = false;
 env.useBrowserCache  = true;
 
-const MODEL_ID    = 'onnx-community/Qwen3-0.6B-ONNX';
-const MODEL_DTYPE = 'q4f16';
-const LS_KEY      = 'pocketchat_v1';
+// ═══════════════════════════════════════════════════════════════════════
+// MODEL CATALOG
+// ═══════════════════════════════════════════════════════════════════════
+const MODELS = [
+  {
+    id:       'smollm2-135m',
+    name:     'SmolLM2 135M',
+    org:      'HuggingFaceTB',
+    hfId:     'HuggingFaceTB/SmolLM2-135M-Instruct',
+    dtype:    'q4',
+    device:   'webgpu',
+    icon:     '🐣',
+    ramMB:    120,
+    hasThink: false,
+    noThink:  false,
+    desc:     'O mais leve da lista. Ideal para máquinas com pouca RAM ou como fallback seguro. Respostas simples e rápidas.',
+    tags:     ['ultralight', 'conversa geral', 'rápido'],
+    highlight:'ultralight',
+  },
+  {
+    id:       'smollm2-360m',
+    name:     'SmolLM2 360M',
+    org:      'HuggingFaceTB',
+    hfId:     'HuggingFaceTB/SmolLM2-360M-Instruct',
+    dtype:    'q4',
+    device:   'webgpu',
+    icon:     '🐤',
+    ramMB:    220,
+    hasThink: false,
+    noThink:  false,
+    desc:     'Equilíbrio entre leveza e qualidade. Bom para conversas cotidianas, perguntas e explicações simples.',
+    tags:     ['leve', 'conversa geral', 'equilibrado'],
+    highlight:'equilibrado',
+  },
+  {
+    id:       'lfm2-350m',
+    name:     'LFM2 350M',
+    org:      'Liquid AI',
+    hfId:     'onnx-community/LFM2-350M-ONNX',
+    dtype:    'q4',
+    device:   'webgpu',
+    icon:     '💧',
+    ramMB:    250,
+    hasThink: false,
+    noThink:  false,
+    desc:     'Modelo híbrido da Liquid AI, otimizado para edge AI. Supera modelos do mesmo tamanho em escrita criativa, multi-turn e seguir instruções. Suporta múltiplos idiomas.',
+    tags:     ['edge AI', 'criativo', 'multilíngue', 'multi-turn'],
+    highlight:'criativo',
+  },
+  {
+    id:       'qwen3-06b',
+    name:     'Qwen3 0.6B',
+    org:      'Alibaba / onnx-community',
+    hfId:     'onnx-community/Qwen3-0.6B-ONNX',
+    dtype:    'q4f16',
+    device:   'webgpu',
+    icon:     '🧠',
+    ramMB:    420,
+    hasThink: true,
+    noThink:  false,
+    desc:     'O mais capaz da lista. Tem raciocínio interno (chain-of-thought) e segue instruções complexas muito bem. Ideal se você tem RAM sobrando.',
+    tags:     ['raciocínio', 'melhor qualidade', 'chain-of-thought'],
+    highlight:'melhor qualidade',
+  },
+];
 
-// Sem /no_think — queremos o raciocínio visível no PocketChat!
 const SYSTEM_PROMPT = `You are PocketChat, a helpful and friendly AI assistant that runs entirely in the browser.
 You are concise, clear, and useful. You answer questions directly and honestly.
 You can help with writing, explaining concepts, answering questions, brainstorming, and general conversation.
 When you don't know something, say so. Keep responses focused.
 Always respond in the same language the user writes in.`;
 
-const messagesEl  = document.getElementById('messages');
-const inputEl     = document.getElementById('user-input');
-const sendBtn     = document.getElementById('send-btn');
-const clearBtn    = document.getElementById('clear-btn');
-const statusPill  = document.getElementById('status-pill');
-const statusLabel = document.getElementById('status-label');
-const overlay     = document.getElementById('loading-overlay');
-const loadTextEl  = document.getElementById('load-text');
-const loadBar     = document.getElementById('load-bar');
+// ═══════════════════════════════════════════════════════════════════════
+// DOM
+// ═══════════════════════════════════════════════════════════════════════
+const selectorEl   = document.getElementById('selector-screen');
+const ramDisplayEl = document.getElementById('ram-display');
+const modelGridEl  = document.getElementById('model-grid');
+const loadBtnEl    = document.getElementById('load-btn');
+const loadingEl    = document.getElementById('loading-overlay');
+const loadIconEl   = document.getElementById('load-icon');
+const loadTitleEl  = document.getElementById('load-title');
+const loadTextEl   = document.getElementById('load-text');
+const loadBarEl    = document.getElementById('load-bar');
+const appEl        = document.getElementById('app');
+const hAvatarEl    = document.getElementById('h-avatar');
+const hTitleEl     = document.getElementById('h-title');
+const hSubEl       = document.getElementById('h-sub');
+const messagesEl   = document.getElementById('messages');
+const inputEl      = document.getElementById('user-input');
+const sendBtn      = document.getElementById('send-btn');
+const clearBtn     = document.getElementById('clear-btn');
+const switchBtn    = document.getElementById('switch-btn');
+const statusPill   = document.getElementById('status-pill');
+const statusLabel  = document.getElementById('status-label');
 
+// ═══════════════════════════════════════════════════════════════════════
+// RAM DETECTION
+// ═══════════════════════════════════════════════════════════════════════
+let systemRamGB = null;
+
+function detectRAM() {
+  // navigator.deviceMemory returns approximate RAM in GB (1, 2, 4, 8, …)
+  if (navigator.deviceMemory) {
+    systemRamGB = navigator.deviceMemory;
+    ramDisplayEl.innerHTML = `
+      <div class="ram-detected">
+        🖥️ RAM detectada: <span class="ram-val">${systemRamGB} GB</span>
+        <span style="color:var(--muted2)">· modelos compatíveis destacados abaixo</span>
+      </div>`;
+  } else {
+    // Can't detect — show dropdown
+    ramDisplayEl.innerHTML = `
+      <div class="ram-input-row">
+        <label>Não consegui detectar sua RAM. Informe:</label>
+        <select id="ram-select">
+          <option value="2">2 GB</option>
+          <option value="4" selected>4 GB</option>
+          <option value="8">8 GB</option>
+          <option value="16">16 GB</option>
+          <option value="32">32 GB ou mais</option>
+        </select>
+      </div>`;
+    const sel = document.getElementById('ram-select');
+    systemRamGB = parseInt(sel.value);
+    sel.addEventListener('change', () => {
+      systemRamGB = parseInt(sel.value);
+      renderCards();
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MODEL CARDS
+// ═══════════════════════════════════════════════════════════════════════
+let selectedModelId = null;
+
+function getCompat(model) {
+  if (!systemRamGB) return 'ok';
+  const needed = model.ramMB / 1024;          // GB
+  const free   = systemRamGB * 0.6;           // assume ~60% available to browser
+  if (needed <= free * 0.7) return 'ok';
+  if (needed <= free)       return 'warn';
+  return 'err';
+}
+
+const COMPAT_LABEL = { ok: '✓ Compatível', warn: '⚠ Limite', err: '✗ Pesado' };
+
+function renderCards() {
+  modelGridEl.innerHTML = '';
+  selectedModelId = null;
+  loadBtnEl.disabled = true;
+
+  MODELS.forEach(m => {
+    const compat = getCompat(m);
+    const incompatible = compat === 'err';
+
+    const card = document.createElement('div');
+    card.className = 'model-card' + (incompatible ? ' incompatible' : '');
+    card.dataset.id = m.id;
+
+    const tagsHtml = m.tags.map(t =>
+      `<span class="tag${t === m.highlight ? ' highlight' : ''}">${t}</span>`
+    ).join('');
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-left">
+          <div class="card-icon">${m.icon}</div>
+          <div>
+            <div class="card-name">${m.name}</div>
+            <div class="card-org">${m.org}</div>
+          </div>
+        </div>
+        <span class="compat-badge ${compat}">${COMPAT_LABEL[compat]}</span>
+      </div>
+      <div class="card-desc">${m.desc}</div>
+      <div class="card-tags">${tagsHtml}</div>
+      <div class="card-footer">
+        <span>💾 ~${m.ramMB}MB</span>
+        <span>·</span>
+        <span>⚡ WebGPU</span>
+        <span>·</span>
+        <span style="font-family:'Geist Mono',monospace;font-size:.65rem;color:var(--muted2)">${m.dtype}</span>
+      </div>
+      <div class="card-watermark">${m.icon}</div>`;
+
+    if (!incompatible) {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedModelId = m.id;
+        loadBtnEl.disabled = false;
+      });
+    }
+
+    modelGridEl.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LOAD MODEL
+// ═══════════════════════════════════════════════════════════════════════
 let generator    = null;
 let isGenerating = false;
 let history      = [];
+let activeModel  = null;
+const LS_KEY     = 'pocketchat_v2';
 
+loadBtnEl.addEventListener('click', async () => {
+  const model = MODELS.find(m => m.id === selectedModelId);
+  if (!model) return;
+  activeModel = model;
+
+  // Transition to loading
+  selectorEl.classList.add('hidden');
+  loadingEl.classList.add('visible');
+  loadIconEl.textContent = model.icon;
+  loadTitleEl.textContent = `Carregando ${model.name}…`;
+  loadTextEl.textContent  = `Iniciando WebGPU…\n~${model.ramMB}MB · ${model.dtype}`;
+
+  try {
+    generator = await pipeline('text-generation', model.hfId, {
+      dtype: model.dtype,
+      device: model.device,
+      progress_callback(info) {
+        if (info.status === 'progress' && info.total) {
+          const pct = Math.round((info.loaded / info.total) * 100);
+          loadBarEl.style.width = pct + '%';
+          loadTextEl.textContent = `Baixando… ${pct}%\n${(info.loaded/1e6).toFixed(0)} / ${(info.total/1e6).toFixed(0)} MB`;
+        }
+        if (info.status === 'ready') {
+          loadBarEl.style.width = '100%';
+          loadTextEl.textContent = '✓ Pronto!';
+        }
+      },
+    });
+
+    // Setup chat UI
+    hAvatarEl.textContent = model.icon;
+    hTitleEl.textContent  = `PocketChat · ${model.name}`;
+    hSubEl.textContent    = `${model.hfId} · WebGPU · ${model.dtype} · 100% local`;
+
+    loadingEl.classList.remove('visible');
+    appEl.classList.add('visible');
+    setStatus('ready', 'pronto');
+    inputEl.disabled = false;
+    sendBtn.disabled = false;
+    inputEl.focus();
+
+    // Restore or welcome
+    const restored = restoreConversation();
+    if (!restored) {
+      addSysMsg(`${model.name} carregado · sem internet · conversa privada`);
+      const welcome = `Olá! Sou o PocketChat rodando com o modelo ${model.name} 100% no seu navegador. Como posso te ajudar?`;
+      addBotBubbleStatic(welcome);
+      history = [{ role: 'assistant', content: welcome }];
+      saveHistory();
+    } else {
+      addSysMsg(`${model.name} pronto · histórico restaurado`);
+    }
+
+  } catch (err) {
+    console.error(err);
+    loadTextEl.textContent = `❌ Erro ao carregar:\n${err.message}\n\nTente recarregar a página.`;
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════
 const escHtml    = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const scrollBottom = () => { messagesEl.scrollTop = messagesEl.scrollHeight; };
+const scrollBot  = () => { messagesEl.scrollTop = messagesEl.scrollHeight; };
 
 function setStatus(state, label) {
   statusPill.className = 'status-pill ' + state;
   statusLabel.textContent = label;
 }
 
-// ── localStorage ──────────────────────────────────────────────────────
 function saveHistory() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(history)); } catch {}
+  try { localStorage.setItem(LS_KEY + '_' + (activeModel?.id || ''), JSON.stringify(history)); } catch {}
 }
 function loadSaved() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(LS_KEY + '_' + (activeModel?.id || '')) || '[]'); } catch { return []; }
 }
 
-// ── UI helpers ────────────────────────────────────────────────────────
 function addSysMsg(text) {
   const d = document.createElement('div');
   d.className = 'sys-msg'; d.innerHTML = `<span>${escHtml(text)}</span>`;
-  messagesEl.appendChild(d); scrollBottom();
+  messagesEl.appendChild(d); scrollBot();
 }
 function addUserBubble(text) {
   const d = document.createElement('div');
   d.className = 'msg user';
   d.innerHTML = `<div class="msg-icon">Eu</div><div class="msg-body"><div class="bubble">${escHtml(text)}</div></div>`;
-  messagesEl.appendChild(d); scrollBottom();
+  messagesEl.appendChild(d); scrollBot();
 }
-
-// Static bot message (for restoring history, no think block)
 function addBotBubbleStatic(text) {
   const d = document.createElement('div');
   d.className = 'msg bot';
   d.innerHTML = `<div class="msg-icon">AI</div><div class="msg-body"><div class="bubble">${escHtml(text)}</div></div>`;
-  messagesEl.appendChild(d); scrollBottom();
+  messagesEl.appendChild(d); scrollBot();
 }
-
-// Returns { thinkEl, bubbleEl, msgBody } for streaming
-function createStreamingBotMessage() {
+function createStreamingBotMsg() {
   const d = document.createElement('div');
   d.className = 'msg bot';
   d.innerHTML = `
@@ -257,29 +613,22 @@ function createStreamingBotMessage() {
       </details>
       <div class="bubble streaming"></div>
     </div>`;
-  messagesEl.appendChild(d); scrollBottom();
-  return {
-    thinkBlock:   d.querySelector('.think-block'),
-    thinkContent: d.querySelector('.think-content'),
-    bubbleEl:     d.querySelector('.bubble'),
-  };
+  messagesEl.appendChild(d); scrollBot();
+  return { thinkBlock: d.querySelector('.think-block'), thinkContent: d.querySelector('.think-content'), bubbleEl: d.querySelector('.bubble') };
 }
-
 function addTypingIndicator() {
-  const id = 'typing-' + Date.now();
-  const d = document.createElement('div');
+  const id = 'typ-' + Date.now();
+  const d  = document.createElement('div');
   d.className = 'msg bot'; d.id = id;
   d.innerHTML = `<div class="msg-icon">AI</div><div class="msg-body"><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div></div>`;
-  messagesEl.appendChild(d); scrollBottom();
+  messagesEl.appendChild(d); scrollBot();
   return id;
 }
-
 function autoResize() {
   inputEl.style.height = 'auto';
   inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
 }
 
-// ── Restore conversation ──────────────────────────────────────────────
 function restoreConversation() {
   history = loadSaved();
   if (!history.length) return false;
@@ -292,46 +641,9 @@ function restoreConversation() {
   return true;
 }
 
-// ── Load model ────────────────────────────────────────────────────────
-async function loadModel() {
-  try {
-    generator = await pipeline('text-generation', MODEL_ID, {
-      dtype: MODEL_DTYPE,
-      device: 'webgpu',
-      progress_callback(info) {
-        if (info.status === 'progress' && info.total) {
-          const pct = Math.round((info.loaded / info.total) * 100);
-          loadBar.style.width = pct + '%';
-          loadTextEl.textContent = `Baixando… ${pct}%\n${(info.loaded/1e6).toFixed(0)} / ${(info.total/1e6).toFixed(0)} MB`;
-        }
-        if (info.status === 'ready') { loadBar.style.width = '100%'; loadTextEl.textContent = '✓ Pronto!'; }
-      },
-    });
-
-    overlay.classList.add('hidden');
-    setStatus('ready', 'pronto');
-    inputEl.disabled = false;
-    sendBtn.disabled = false;
-    inputEl.focus();
-
-    const restored = restoreConversation();
-    if (!restored) {
-      messagesEl.innerHTML = '';
-      addSysMsg('modelo local · sem internet · conversa privada');
-      const welcome = 'Olá! Sou o PocketChat, rodando 100% no seu navegador via WebGPU. Como posso te ajudar?';
-      addBotBubbleStatic(welcome);
-      history = [{ role: 'assistant', content: welcome }];
-      saveHistory();
-    } else {
-      addSysMsg('modelo pronto');
-    }
-  } catch (err) {
-    console.error(err);
-    loadTextEl.textContent = `Erro ao carregar:\n${err.message}`;
-  }
-}
-
-// ── Send message ──────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// SEND MESSAGE
+// ═══════════════════════════════════════════════════════════════════════
 async function sendMessage() {
   const text = inputEl.value.trim();
   if (!text || isGenerating || !generator) return;
@@ -346,24 +658,23 @@ async function sendMessage() {
   autoResize();
 
   history.push({ role: 'user', content: text });
-
-  const typingId = addTypingIndicator();
+  const typId = addTypingIndicator();
 
   try {
+    const sysPrompt = activeModel?.hasThink
+      ? SYSTEM_PROMPT
+      : SYSTEM_PROMPT; // same for all; noThink via /no_think only for chaos models
+
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: sysPrompt },
       ...history.slice(-8),
     ];
 
-    document.getElementById(typingId)?.remove();
-    const { thinkBlock, thinkContent, bubbleEl } = createStreamingBotMessage();
+    document.getElementById(typId)?.remove();
+    const { thinkBlock, thinkContent, bubbleEl } = createStreamingBotMsg();
 
-    // ── Streaming state machine ──────────────────────────────────────
-    let rawBuffer  = '';
-    let inThink    = false;
-    let thinkDone  = false;
-    let thinkText  = '';
-    let replyText  = '';
+    let rawBuffer = '';
+    let thinkDone = false;
 
     const streamer = new TextStreamer(generator.tokenizer, {
       skip_prompt: true,
@@ -372,41 +683,26 @@ async function sendMessage() {
         rawBuffer += token;
 
         if (!thinkDone) {
-          const tStart = rawBuffer.indexOf('<think>');
-          const tEnd   = rawBuffer.indexOf('</think>');
-
-          if (tStart !== -1 && tEnd !== -1) {
-            // Full think block captured
-            thinkText = rawBuffer.slice(tStart + 7, tEnd).trim();
-            replyText = rawBuffer.slice(tEnd + 8).trim();
+          const tS = rawBuffer.indexOf('<think>');
+          const tE = rawBuffer.indexOf('</think>');
+          if (tS !== -1 && tE !== -1) {
             thinkDone = true;
-            inThink   = false;
+            thinkContent.textContent = rawBuffer.slice(tS + 7, tE).trim();
             thinkBlock.style.display = '';
             thinkBlock.classList.remove('think-streaming');
-            thinkContent.textContent = thinkText;
-            bubbleEl.textContent = replyText || ' ';
-          } else if (tStart !== -1) {
-            // Inside think block, still streaming
-            inThink = true;
-            thinkText = rawBuffer.slice(tStart + 7).trim();
+            bubbleEl.textContent = rawBuffer.slice(tE + 8).trim() || ' ';
+          } else if (tS !== -1) {
+            thinkContent.textContent = rawBuffer.slice(tS + 7).trim();
             thinkBlock.style.display = '';
-            thinkContent.textContent = thinkText;
           } else {
-            // No think block at all — direct response
-            replyText = rawBuffer.trim();
             thinkDone = true;
-            bubbleEl.textContent = replyText || ' ';
+            bubbleEl.textContent = rawBuffer.trim() || ' ';
           }
         } else {
-          // Past think block, streaming reply
-          const tEnd = rawBuffer.indexOf('</think>');
-          replyText = tEnd !== -1
-            ? rawBuffer.slice(tEnd + 8).trim()
-            : rawBuffer.trim();
-          bubbleEl.textContent = replyText || ' ';
+          const tE = rawBuffer.indexOf('</think>');
+          bubbleEl.textContent = (tE !== -1 ? rawBuffer.slice(tE + 8) : rawBuffer).trim() || ' ';
         }
-
-        scrollBottom();
+        scrollBot();
       },
     });
 
@@ -419,23 +715,18 @@ async function sendMessage() {
       streamer,
     });
 
-    // ── Finalize ────────────────────────────────────────────────────
+    // Finalize
     bubbleEl.classList.remove('streaming');
     thinkBlock.classList.remove('think-streaming');
-
-    // Final clean parse of full buffer
-    const tStart = rawBuffer.indexOf('<think>');
-    const tEnd   = rawBuffer.indexOf('</think>');
+    const tS = rawBuffer.indexOf('<think>'), tE = rawBuffer.indexOf('</think>');
     let finalReply = '';
-
-    if (tStart !== -1 && tEnd !== -1) {
-      thinkContent.textContent = rawBuffer.slice(tStart + 7, tEnd).trim();
+    if (tS !== -1 && tE !== -1) {
+      thinkContent.textContent = rawBuffer.slice(tS + 7, tE).trim();
       thinkBlock.style.display = '';
-      finalReply = rawBuffer.slice(tEnd + 8).trim();
+      finalReply = rawBuffer.slice(tE + 8).trim();
     } else {
       finalReply = rawBuffer.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     }
-
     finalReply = finalReply || 'Hmm, não consegui gerar uma resposta. Tente novamente.';
     bubbleEl.textContent = finalReply;
 
@@ -443,7 +734,7 @@ async function sendMessage() {
     saveHistory();
 
   } catch (err) {
-    document.getElementById(typingId)?.remove();
+    document.getElementById(typId)?.remove();
     console.error(err);
     addBotBubbleStatic('Ocorreu um erro ao gerar a resposta. Tente novamente.');
   } finally {
@@ -455,24 +746,36 @@ async function sendMessage() {
   }
 }
 
-// ── Clear ─────────────────────────────────────────────────────────────
-function clearConversation() {
+// ═══════════════════════════════════════════════════════════════════════
+// CLEAR / SWITCH
+// ═══════════════════════════════════════════════════════════════════════
+clearBtn.addEventListener('click', () => {
   history = [];
-  try { localStorage.removeItem(LS_KEY); } catch {}
+  try { localStorage.removeItem(LS_KEY + '_' + (activeModel?.id || '')); } catch {}
   messagesEl.innerHTML = '';
   addSysMsg('conversa apagada');
-  const msg = 'Tudo limpo! Como posso te ajudar?';
-  addBotBubbleStatic(msg);
-  history = [{ role: 'assistant', content: msg }];
-}
+  addBotBubbleStatic('Tudo limpo! Como posso te ajudar?');
+  history = [{ role: 'assistant', content: 'Tudo limpo! Como posso te ajudar?' }];
+});
 
-// ── Events ────────────────────────────────────────────────────────────
+switchBtn.addEventListener('click', () => {
+  if (confirm('Trocar de modelo vai recarregar a página. O histórico ficará salvo. Confirma?')) {
+    location.reload();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════════════════════════════════
 inputEl.addEventListener('input', autoResize);
 inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 sendBtn.addEventListener('click', sendMessage);
-clearBtn.addEventListener('click', clearConversation);
 
-loadModel();
+// ═══════════════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════════════
+detectRAM();
+renderCards();
 </script>
 </body>
 </html>
