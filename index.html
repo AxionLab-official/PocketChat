@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&family=Geist:wght@300;400;500;600;700&display=swap" />
   <style>
+    /* ══ THEMES ══════════════════════════════════════════════════════════ */
     :root {
       --bg:#f5f4f0; --surface:#fff; --surface2:#efefeb; --surface3:#e8e8e3;
       --border:#ddddd8; --border2:#c8c8c2;
@@ -18,14 +19,32 @@
       --warn:#d97706; --warn-bg:#fffbeb; --warn-bd:#fde68a;
       --err:#dc2626; --err-bg:#fef2f2; --err-bd:#fecaca;
       --think-bg:#fafaf7; --think-bd:#e0e0d8; --think-text:#666660;
+      --overlay:rgba(0,0,0,.45);
       --radius:16px;
       --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
       --shadow-md:0 4px 12px rgba(0,0,0,.1),0 12px 32px rgba(0,0,0,.08);
     }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Geist',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+    [data-theme="dark"] {
+      --bg:#111110; --surface:#1c1c1b; --surface2:#262625; --surface3:#303030;
+      --border:#3a3a38; --border2:#4a4a48;
+      --bot-bg:#1c1c1b; --bot-text:#e8e8e4;
+      --text:#e8e8e4; --muted:#7a7a74; --muted2:#5a5a56;
+      --ok-bg:#052e16; --ok-bd:#14532d;
+      --warn-bg:#1c1400; --warn-bd:#78350f;
+      --err-bg:#1f0707; --err-bd:#7f1d1d;
+      --think-bg:#1a1a18; --think-bd:#333330; --think-text:#7a7a74;
+      --accent-dim:#1e3a5f;
+      --overlay:rgba(0,0,0,.72);
+    }
 
-    /* ══ SELECTOR ══════════════════════════════════════════════════════ */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{
+      height:100%;background:var(--bg);color:var(--text);
+      font-family:'Geist',sans-serif;overflow:hidden;
+      -webkit-font-smoothing:antialiased;transition:background .2s,color .2s;
+    }
+
+    /* ══ SELECTOR ════════════════════════════════════════════════════════ */
     #selector-screen{
       position:fixed;inset:0;z-index:100;background:var(--bg);
       display:flex;flex-direction:column;align-items:center;
@@ -46,7 +65,6 @@
       margin-top:14px;color:var(--muted);
     }
     .ram-pill .ram-val{color:var(--text);font-weight:600}
-
     .ram-ask{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center}
     .ram-ask label{font-size:.82rem;color:var(--muted)}
     .ram-ask select{
@@ -55,7 +73,6 @@
       color:var(--text);outline:none;cursor:pointer;
     }
 
-    /* category */
     .cat-label{
       width:100%;max-width:680px;
       font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
@@ -64,10 +81,7 @@
     }
     .cat-label::after{content:'';flex:1;height:1px;background:var(--border)}
 
-    .model-grid{
-      display:grid;gap:12px;width:100%;max-width:680px;
-      grid-template-columns:1fr;
-    }
+    .model-grid{display:grid;gap:12px;width:100%;max-width:680px;grid-template-columns:1fr}
     @media(min-width:580px){.model-grid{grid-template-columns:1fr 1fr}}
 
     .model-card{
@@ -77,7 +91,7 @@
       position:relative;overflow:hidden;
     }
     .model-card:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1);transform:translateY(-1px)}
-    .model-card.selected{border-color:var(--accent);background:#f0f6ff}
+    .model-card.selected{border-color:var(--accent);background:var(--accent-dim)}
     .model-card.incompatible{opacity:.52;cursor:not-allowed}
     .model-card.incompatible:hover{border-color:var(--border);box-shadow:none;transform:none}
 
@@ -96,7 +110,6 @@
     .compat-badge.err {background:var(--err-bg); color:var(--err); border:1px solid var(--err-bd)}
 
     .card-desc{font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:10px}
-
     .card-tags{display:flex;flex-wrap:wrap;gap:5px}
     .tag{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-size:.66rem;font-family:'Geist Mono',monospace;color:var(--muted)}
     .tag.hi{background:var(--accent-dim);border-color:#bfdbfe;color:var(--accent)}
@@ -106,7 +119,6 @@
       margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
       font-size:.7rem;color:var(--muted);font-family:'Geist Mono',monospace;
     }
-
     .card-wm{position:absolute;right:12px;bottom:8px;font-size:3.5rem;opacity:.04;pointer-events:none;user-select:none}
 
     #load-btn{
@@ -123,7 +135,7 @@
     /* ══ LOADING ════════════════════════════════════════════════════════ */
     #loading-overlay{
       position:fixed;inset:0;z-index:99;
-      background:rgba(245,244,240,.96);backdrop-filter:blur(8px);
+      background:var(--bg);backdrop-filter:blur(8px);
       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
       opacity:0;pointer-events:none;transition:opacity .3s;
     }
@@ -148,19 +160,24 @@
     }
     #app.visible{opacity:1;pointer-events:all}
 
-    header{flex-shrink:0;padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface)}
+    header{
+      flex-shrink:0;padding:10px 14px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:10px;background:var(--surface);
+    }
     .h-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;color:#fff}
     .h-text{flex:1;min-width:0}
     .h-title{font-size:.9rem;font-weight:600;letter-spacing:-.01em}
     .h-sub{font-size:.62rem;color:var(--muted);margin-top:1px;font-family:'Geist Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .h-actions{display:flex;align-items:center;gap:5px;flex-shrink:0}
+
     .h-btn{
       background:none;border:1px solid var(--border);color:var(--muted);
       font-size:.62rem;font-family:'Geist Mono',monospace;
       padding:4px 7px;border-radius:6px;cursor:pointer;
-      transition:border-color .2s,color .2s;white-space:nowrap;
+      transition:border-color .2s,color .2s,background .15s;white-space:nowrap;
     }
     .h-btn:hover{border-color:var(--accent);color:var(--accent)}
+    #dark-btn{font-size:.8rem}
     #switch-btn:hover{border-color:var(--err);color:var(--err)}
 
     .status-pill{display:flex;align-items:center;gap:4px;font-size:.62rem;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:3px 8px;border-radius:20px;flex-shrink:0;transition:all .3s}
@@ -171,6 +188,7 @@
     .status-pill.loading .status-dot,.status-pill.typing .status-dot{animation:blink .7s ease-in-out infinite}
     @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 
+    /* ══ MESSAGES ═══════════════════════════════════════════════════════ */
     #messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth}
     #messages::-webkit-scrollbar{width:4px}
     #messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
@@ -181,14 +199,30 @@
     .msg-icon{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-top:2px}
     .msg.user .msg-icon{background:var(--accent);color:#fff}
     .msg.bot  .msg-icon{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
-    .msg-body{display:flex;flex-direction:column;gap:6px;max-width:73%}
+
+    .msg-body{display:flex;flex-direction:column;gap:6px;max-width:73%;position:relative}
     .msg.user .msg-body{align-items:flex-end}
+
     .bubble{padding:9px 13px;border-radius:var(--radius);line-height:1.65;font-size:.875rem;white-space:pre-wrap;word-break:break-word}
     .msg.user .bubble{background:var(--user-bg);color:var(--user-text);border-bottom-right-radius:4px}
     .msg.bot  .bubble{background:var(--bot-bg);color:var(--bot-text);border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
     .bubble.streaming::after{content:'▋';animation:cur .6s step-end infinite;color:var(--accent);font-size:.8em}
     @keyframes cur{0%,100%{opacity:1}50%{opacity:0}}
 
+    /* ══ COPY BUTTON ════════════════════════════════════════════════════ */
+    .copy-btn{
+      align-self:flex-start;
+      background:none;border:1px solid var(--border);color:var(--muted2);
+      border-radius:6px;padding:3px 8px;
+      font-size:.63rem;font-family:'Geist Mono',monospace;
+      cursor:pointer;opacity:0;
+      transition:opacity .15s,color .15s,border-color .15s,background .15s;
+    }
+    .msg-body:hover .copy-btn{opacity:1}
+    .copy-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+    .copy-btn.copied{color:var(--ok);border-color:var(--ok-bd);background:var(--ok-bg);opacity:1}
+
+    /* ══ THINK BLOCK ════════════════════════════════════════════════════ */
     .think-block{background:var(--think-bg);border:1px solid var(--think-bd);border-radius:10px;font-size:.74rem;color:var(--think-text);font-family:'Geist Mono',monospace;overflow:hidden}
     .think-block summary{padding:6px 10px;cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px;list-style:none;outline:none;transition:background .15s}
     .think-block summary::-webkit-details-marker{display:none}
@@ -198,29 +232,100 @@
     .think-content{padding:8px 10px 10px;border-top:1px solid var(--think-bd);line-height:1.6;white-space:pre-wrap}
     .think-streaming .think-content::after{content:'▋';animation:cur .6s step-end infinite}
 
+    /* ══ TYPING INDICATOR ═══════════════════════════════════════════════ */
     .typing-dots{display:inline-flex;gap:4px;align-items:center;padding:3px 2px}
     .typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--border2);animation:bounce .9s ease-in-out infinite}
-    .typing-dots span:nth-child(2){animation-delay:.15s}.typing-dots span:nth-child(3){animation-delay:.30s}
+    .typing-dots span:nth-child(2){animation-delay:.15s}
+    .typing-dots span:nth-child(3){animation-delay:.30s}
     @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
 
     .sys-msg{text-align:center;font-size:.65rem;font-family:'Geist Mono',monospace;color:var(--muted);padding:2px 0}
     .sys-msg span{background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:20px}
 
+    /* ══ INPUT BAR ══════════════════════════════════════════════════════ */
     #input-bar{flex-shrink:0;padding:10px 12px 12px;border-top:1px solid var(--border);background:var(--surface);display:flex;gap:8px;align-items:flex-end}
-    #user-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Geist',sans-serif;font-size:.875rem;padding:9px 13px;resize:none;outline:none;line-height:1.5;max-height:120px;transition:border-color .2s,box-shadow .2s}
+    #user-input{
+      flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+      color:var(--text);font-family:'Geist',sans-serif;font-size:.875rem;
+      padding:9px 13px;resize:none;outline:none;line-height:1.5;max-height:120px;
+      transition:border-color .2s,box-shadow .2s;
+    }
     #user-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
     #user-input::placeholder{color:var(--muted)}
-    #send-btn{flex-shrink:0;width:38px;height:38px;border:none;border-radius:10px;background:var(--accent);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s,opacity .2s,background .15s}
+
+    #send-btn,#stop-btn{
+      flex-shrink:0;width:38px;height:38px;border:none;border-radius:10px;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:transform .12s,opacity .2s,background .15s;
+    }
+    #send-btn{background:var(--accent);color:#fff}
     #send-btn:hover:not(:disabled){background:var(--accent-d)}
     #send-btn:active:not(:disabled){transform:scale(.92)}
     #send-btn:disabled{opacity:.35;cursor:default}
 
-    @media(max-width:500px){.msg-body{max-width:87%}#app{box-shadow:none}}
+    #stop-btn{background:var(--err-bg);color:var(--err);border:1px solid var(--err-bd);display:none;font-size:.9rem}
+    #stop-btn:hover{background:var(--err);color:#fff;border-color:var(--err)}
+
+    /* ══ SETTINGS MODAL ══════════════════════════════════════════════════ */
+    #settings-overlay{
+      position:fixed;inset:0;z-index:200;
+      background:var(--overlay);backdrop-filter:blur(4px);
+      display:flex;align-items:center;justify-content:center;padding:16px;
+      opacity:0;pointer-events:none;transition:opacity .25s;
+    }
+    #settings-overlay.open{opacity:1;pointer-events:all}
+
+    .settings-modal{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:20px;padding:24px;width:100%;max-width:460px;
+      box-shadow:var(--shadow-md);display:flex;flex-direction:column;gap:16px;
+      transform:translateY(10px);transition:transform .25s;
+    }
+    #settings-overlay.open .settings-modal{transform:translateY(0)}
+
+    .settings-title{font-size:1rem;font-weight:600;display:flex;align-items:center;gap:8px}
+    .settings-desc{font-size:.8rem;color:var(--muted);line-height:1.55}
+
+    #custom-prompt-input{
+      width:100%;background:var(--surface2);border:1px solid var(--border);
+      border-radius:10px;color:var(--text);font-family:'Geist',sans-serif;
+      font-size:.82rem;padding:10px 12px;resize:vertical;outline:none;
+      line-height:1.55;min-height:100px;max-height:200px;
+      transition:border-color .2s,box-shadow .2s;
+    }
+    #custom-prompt-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+    #custom-prompt-input::placeholder{color:var(--muted2)}
+
+    .settings-hint{
+      font-size:.7rem;color:var(--muted2);font-family:'Geist Mono',monospace;
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:8px;padding:8px 10px;line-height:1.5;
+    }
+    .settings-actions{display:flex;gap:8px;justify-content:flex-end}
+
+    .btn-secondary{
+      background:var(--surface2);border:1px solid var(--border);color:var(--text);
+      border-radius:8px;padding:8px 16px;font-family:'Geist',sans-serif;
+      font-size:.82rem;font-weight:500;cursor:pointer;transition:border-color .2s;
+    }
+    .btn-secondary:hover{border-color:var(--border2)}
+    .btn-primary{
+      background:var(--accent);border:none;color:#fff;
+      border-radius:8px;padding:8px 16px;font-family:'Geist',sans-serif;
+      font-size:.82rem;font-weight:600;cursor:pointer;transition:background .15s;
+    }
+    .btn-primary:hover{background:var(--accent-d)}
+
+    @media(max-width:500px){
+      .msg-body{max-width:87%}
+      #app{box-shadow:none}
+      .h-actions{gap:3px}
+    }
   </style>
 </head>
 <body>
 
-<!-- ── Selector ── -->
+<!-- ── Selector ─────────────────────────────────────────────────────── -->
 <div id="selector-screen">
   <div class="sel-header">
     <div class="sel-logo">💬</div>
@@ -232,17 +337,17 @@
   <button id="load-btn" disabled>Carregar modelo selecionado</button>
 </div>
 
-<!-- ── Loading ── -->
+<!-- ── Loading ──────────────────────────────────────────────────────── -->
 <div id="loading-overlay">
   <div class="load-card">
     <div class="load-icon2" id="load-icon">⏳</div>
     <div class="load-title2" id="load-title">Carregando modelo…</div>
-    <div id="load-text">Iniciando WebGPU…</div>
+    <div id="load-text">Iniciando…</div>
     <div id="load-progress"><div id="load-bar"></div></div>
   </div>
 </div>
 
-<!-- ── Chat ── -->
+<!-- ── Chat App ──────────────────────────────────────────────────────── -->
 <div id="app">
   <header>
     <div class="h-avatar" id="h-avatar">💬</div>
@@ -251,6 +356,8 @@
       <div class="h-sub"   id="h-sub">…</div>
     </div>
     <div class="h-actions">
+      <button class="h-btn" id="dark-btn"     title="Alternar tema">🌙</button>
+      <button class="h-btn" id="settings-btn" title="Personalizar prompt do sistema">⚙️ prompt</button>
       <button class="h-btn" id="clear-btn">limpar</button>
       <button class="h-btn" id="switch-btn">trocar modelo</button>
       <div class="status-pill loading" id="status-pill">
@@ -259,14 +366,31 @@
       </div>
     </div>
   </header>
+
   <div id="messages"></div>
+
   <div id="input-bar">
     <textarea id="user-input" rows="1" placeholder="Digite sua mensagem…" disabled></textarea>
+    <button id="stop-btn" title="Parar geração">⏹</button>
     <button id="send-btn" disabled>
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
         <path d="M2 8L14 8M14 8L9 3M14 8L9 13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
+  </div>
+</div>
+
+<!-- ── Settings Modal ───────────────────────────────────────────────── -->
+<div id="settings-overlay">
+  <div class="settings-modal">
+    <div class="settings-title">⚙️ Personalizar assistente</div>
+    <p class="settings-desc">Adicione instruções extras ao prompt de sistema. Elas são combinadas com as configurações base do PocketChat — não as substituem.</p>
+    <textarea id="custom-prompt-input" placeholder="Ex: Sempre responda em inglês. Prefira exemplos em Python. Seja mais formal e técnico."></textarea>
+    <div class="settings-hint">💡 O prompt base (personalidade, formato e idioma automático) continua sempre ativo. Suas instruções são <strong>adicionadas</strong> a ele.</div>
+    <div class="settings-actions">
+      <button class="btn-secondary" id="settings-cancel">Cancelar</button>
+      <button class="btn-primary"   id="settings-save">Salvar</button>
+    </div>
   </div>
 </div>
 
@@ -281,113 +405,125 @@ env.useBrowserCache  = true;
 // ════════════════════════════════════════════════════════════════════════
 const CATEGORIES = [
   {
-    label: '🐣 Leves — menos de 250 MB',
+    label: '🐣 Leves — menos de 300 MB',
     models: [
+      {
+        id:'pythia-14m', icon:'🔬',
+        name:'Pythia 14M', org:'EleutherAI / Xenova',
+        hfId:'Xenova/pythia-14m',
+        dtype:'fp32', device:'wasm', ramMB:60, maxTokens:128,
+        hasThink:false, isBase:true,
+        desc:'O menor modelo possível — 14M parâmetros. Geração de texto base sem fine-tuning para instrução. Ultra-rápido, ideal para testes.',
+        tags:['14M params','base model','ultrarrápido'], hi:'ultrarrápido',
+      },
       {
         id:'smollm2-135m', icon:'🐣',
         name:'SmolLM2 135M', org:'HuggingFace',
         hfId:'HuggingFaceTB/SmolLM2-135M-Instruct',
         dtype:'q4', device:'webgpu', ramMB:120, maxTokens:256,
-        hasThink:false,
-        desc:'O mais leve de todos. Ideal para hardware limitado ou testes rápidos. Respostas curtas e diretas.',
-        tags:['ultralight','conversa geral','rápido'],hi:'ultralight',
+        hasThink:false, isBase:false,
+        desc:'O mais leve com suporte a instruções. Ideal para hardware limitado ou testes rápidos. Respostas curtas e diretas.',
+        tags:['ultralight','conversa geral','rápido'], hi:'ultralight',
+      },
+      {
+        id:'gpt-neo-125m', icon:'🤖',
+        name:'GPT-Neo 125M', org:'EleutherAI / Xenova',
+        hfId:'Xenova/gpt-neo-125M',
+        dtype:'fp32', device:'wasm', ramMB:250, maxTokens:128,
+        hasThink:false, isBase:true,
+        desc:'GPT-Neo da EleutherAI com 125M parâmetros. Modelo base de geração livre — não segue formato de instrução.',
+        tags:['125M params','base model','geração livre'], hi:'base model',
       },
       {
         id:'smollm2-360m', icon:'🐤',
         name:'SmolLM2 360M', org:'HuggingFace',
         hfId:'HuggingFaceTB/SmolLM2-360M-Instruct',
         dtype:'q4', device:'webgpu', ramMB:220, maxTokens:512,
-        hasThink:false,
+        hasThink:false, isBase:false,
         desc:'Equilíbrio perfeito entre leveza e qualidade. Ótimo para perguntas cotidianas e explicações simples.',
-        tags:['leve','conversa geral','equilibrado'],hi:'equilibrado',
-      },
-      {
-        id:'lfm2-350m', icon:'💧',
-        name:'LFM2 350M', org:'Liquid AI',
-        hfId:'onnx-community/LFM2-350M-ONNX',
-        dtype:'q4', device:'webgpu', ramMB:240, maxTokens:512,
-        hasThink:false,
-        desc:'Modelo híbrido da Liquid AI otimizado para edge devices. Destaca-se em escrita criativa, conversas longas e multilíngue.',
-        tags:['edge AI','criativo','multilíngue'],hi:'criativo',
+        tags:['leve','conversa geral','equilibrado'], hi:'equilibrado',
       },
     ],
   },
   {
-    label: '⚡ Médios — 250 MB a 600 MB',
+    label: '⚡ Médios — 300 MB a 700 MB',
     models: [
+      {
+        id:'qwen15-05b', icon:'💬',
+        name:'Qwen1.5 0.5B Chat', org:'Alibaba / Xenova',
+        hfId:'Xenova/Qwen1.5-0.5B-Chat',
+        dtype:'q8', device:'wasm', ramMB:380, maxTokens:512,
+        hasThink:false, isBase:false,
+        desc:'Qwen1.5 da Alibaba otimizado para chat. Boa cobertura multilíngue e seguimento de instruções.',
+        tags:['chat','multi-idioma','0.5B params'], hi:'chat',
+      },
       {
         id:'qwen25-05b', icon:'⚡',
         name:'Qwen2.5 0.5B', org:'Mozilla / Alibaba',
         hfId:'Mozilla/Qwen2.5-0.5B-Instruct',
         dtype:'q4', device:'webgpu', ramMB:320, maxTokens:1024,
-        hasThink:false,
-        desc:'Versão estável do Qwen2.5, empacotado pela Mozilla para rodar no browser. Boa cobertura de idiomas e seguimento de instruções.',
-        tags:['multi-idioma','instrução','estável'],hi:'instrução',
-      },
-      {
-      id:'qwen35-08b',
-      icon:'🚀',
-      name:'Qwen3.5 0.8B',
-      org:'Alibaba / onnx-community',
-      hfId:'onnx-community/Qwen3.5-0.8B-ONNX',
-      dtype:'q4f16',
-      device:'webgpu',
-      ramMB:520,
-      maxTokens:2048,
-      hasThink:true,
-      desc:'Nova geração do Qwen3.5. Melhor seguimento de instruções, raciocínio aprimorado e qualidade próxima a modelos muito maiores.',
-      tags:['novo','raciocínio','instrução forte'],
-      hi:'novo',
+        hasThink:false, isBase:false,
+        desc:'Versão estável do Qwen2.5 empacotado pela Mozilla para o browser. Boa cobertura de idiomas e seguimento de instruções.',
+        tags:['multi-idioma','instrução','estável'], hi:'instrução',
       },
       {
         id:'qwen3-06b', icon:'🧠',
         name:'Qwen3 0.6B', org:'Alibaba / onnx-community',
         hfId:'onnx-community/Qwen3-0.6B-ONNX',
         dtype:'q4f16', device:'webgpu', ramMB:420, maxTokens:2048,
-        hasThink:true,
+        hasThink:true, isBase:false,
         desc:'Melhor qualidade da categoria. Possui raciocínio interno (chain-of-thought) visível — o modelo "pensa" antes de responder.',
-        tags:['raciocínio','chain-of-thought','melhor qualidade'],hi:'melhor qualidade',
+        tags:['raciocínio','chain-of-thought','melhor qualidade'], hi:'melhor qualidade',
+      },
+      {
+        id:'lamini-590m', icon:'🧪',
+        name:'LaMini-Cerebras 590M', org:'MBZUAI / Xenova',
+        hfId:'Xenova/LaMini-Cerebras-590M',
+        dtype:'q8', device:'wasm', ramMB:580, maxTokens:512,
+        hasThink:false, isBase:false,
+        desc:'Instruction-tuned treinado com 2.7M pares de instrução pela Cerebras. Boa resposta a comandos diretos.',
+        tags:['instruction-tuned','590M params','cerebras'], hi:'instruction-tuned',
       },
       {
         id:'lfm2-700m', icon:'🌊',
         name:'LFM2 700M', org:'Liquid AI',
         hfId:'onnx-community/LFM2-700M-ONNX',
         dtype:'q4', device:'webgpu', ramMB:480, maxTokens:1024,
-        hasThink:false,
-        desc:'Versão maior do LFM2. Melhor coerência em conversas longas e tarefas criativas complexas, mantendo boa velocidade.',
-        tags:['edge AI','criativo','conversas longas'],hi:'conversas longas',
+        hasThink:false, isBase:false,
+        desc:'Versão maior do LFM2. Melhor coerência em conversas longas e tarefas criativas complexas.',
+        tags:['edge AI','criativo','conversas longas'], hi:'conversas longas',
       },
     ],
   },
   {
-    label: '🦾 Pesados — acima de 600 MB',
+    label: '🦾 Pesados — acima de 700 MB',
     models: [
       {
         id:'falcon3-1b', icon:'🦅',
         name:'Falcon3 1B', org:'Technology Innovation Institute',
         hfId:'onnx-community/Falcon3-1B-Instruct',
         dtype:'q4', device:'webgpu', ramMB:700, maxTokens:1024,
-        hasThink:false,
+        hasThink:false, isBase:false,
         desc:'1 bilhão de parâmetros da TII. Excelente em código, análise de texto e respostas técnicas detalhadas.',
-        tags:['1B params','código','técnico'],hi:'código',
+        tags:['1B params','código','técnico'], hi:'código',
       },
       {
         id:'smollm2-17b', icon:'🐘',
         name:'SmolLM2 1.7B', org:'HuggingFace',
         hfId:'HuggingFaceTB/SmolLM2-1.7B-Instruct',
         dtype:'q4f16', device:'webgpu', ramMB:900, maxTokens:1024,
-        hasThink:false,
-        desc:'O maior da família SmolLM2. Notável salto de qualidade frente ao 360M. Requer hardware decente — ideal com 16GB+ de RAM.',
-        tags:['1.7B params','alta qualidade','instruções complexas'],hi:'alta qualidade',
+        hasThink:false, isBase:false,
+        desc:'O maior da família SmolLM2. Notável salto de qualidade frente ao 360M. Ideal com 16GB+ de RAM.',
+        tags:['1.7B params','alta qualidade','instruções complexas'], hi:'alta qualidade',
       },
       {
         id:'llama32-1b', icon:'🦙',
         name:'Llama 3.2 1B', org:'Meta / onnx-community',
         hfId:'onnx-community/Llama-3.2-1B-Instruct-q4f16',
         dtype:'q4f16', device:'webgpu', ramMB:1100, maxTokens:2048,
-        hasThink:false,
-        desc:'Llama da Meta com 128k tokens de contexto. Excelente raciocínio, código e escrita. Precisa de ~16GB RAM livres no sistema.',
-        tags:['1B params','128k contexto','Meta','raciocínio'],hi:'128k contexto',
+        hasThink:false, isBase:false,
+        desc:'Llama da Meta com 128k tokens de contexto. Excelente raciocínio, código e escrita. Precisa ~16GB RAM livres.',
+        tags:['1B params','128k contexto','Meta','raciocínio'], hi:'128k contexto',
       },
     ],
   },
@@ -395,7 +531,7 @@ const CATEGORIES = [
 
 const ALL_MODELS = CATEGORIES.flatMap(c => c.models);
 
-const SYSTEM_PROMPT = `You are PocketChat, a fast, browser-based AI assistant. 
+const SYSTEM_PROMPT = `You are PocketChat, a fast, browser-based AI assistant.
 Your goal is to provide maximum value with minimum word count.
 
 ### GUIDELINES:
@@ -403,32 +539,88 @@ Your goal is to provide maximum value with minimum word count.
 - **Conciseness:** Use bullet points for complex info; avoid long intros or outros (e.g., "Sure, I can help").
 - **Language:** Automatically detect and respond in the user's language.
 - **Accuracy:** If an answer is unknown or requires real-time data you lack, state it clearly.
-- **Formatting:** Use Markdown (bolding, lists, code blocks) to make responses scannable.
+- **Formatting:** Use Markdown (bold, lists, code blocks) to make responses scannable.
 - **Constraint:** Keep answers focused strictly on the user's intent.`;
 
+// LocalStorage key namespace
+const LS = {
+  DARK:   'pocketchat_dark',
+  PROMPT: 'pocketchat_sysprompt',
+  HIST:   id => `pocketchat_v3_${id}`,
+};
+
 // ════════════════════════════════════════════════════════════════════════
-// DOM
+// DOM REFS
 // ════════════════════════════════════════════════════════════════════════
-const selectorEl    = document.getElementById('selector-screen');
-const ramDisplayEl  = document.getElementById('ram-display');
-const cardsEl       = document.getElementById('cards-container');
-const loadBtnEl     = document.getElementById('load-btn');
-const loadingEl     = document.getElementById('loading-overlay');
-const loadIconEl    = document.getElementById('load-icon');
-const loadTitleEl   = document.getElementById('load-title');
-const loadTextEl    = document.getElementById('load-text');
-const loadBarEl     = document.getElementById('load-bar');
-const appEl         = document.getElementById('app');
-const hAvatarEl     = document.getElementById('h-avatar');
-const hTitleEl      = document.getElementById('h-title');
-const hSubEl        = document.getElementById('h-sub');
-const messagesEl    = document.getElementById('messages');
-const inputEl       = document.getElementById('user-input');
-const sendBtn       = document.getElementById('send-btn');
-const clearBtn      = document.getElementById('clear-btn');
-const switchBtn     = document.getElementById('switch-btn');
-const statusPill    = document.getElementById('status-pill');
-const statusLabel   = document.getElementById('status-label');
+const $ = id => document.getElementById(id);
+
+const selectorEl      = $('selector-screen');
+const ramDisplayEl    = $('ram-display');
+const cardsEl         = $('cards-container');
+const loadBtnEl       = $('load-btn');
+const loadingEl       = $('loading-overlay');
+const loadIconEl      = $('load-icon');
+const loadTitleEl     = $('load-title');
+const loadTextEl      = $('load-text');
+const loadBarEl       = $('load-bar');
+const appEl           = $('app');
+const hAvatarEl       = $('h-avatar');
+const hTitleEl        = $('h-title');
+const hSubEl          = $('h-sub');
+const messagesEl      = $('messages');
+const inputEl         = $('user-input');
+const sendBtn         = $('send-btn');
+const stopBtn         = $('stop-btn');
+const clearBtn        = $('clear-btn');
+const switchBtn       = $('switch-btn');
+const darkBtn         = $('dark-btn');
+const settingsBtn     = $('settings-btn');
+const settingsOverlay = $('settings-overlay');
+const settingsCancel  = $('settings-cancel');
+const settingsSave    = $('settings-save');
+const customPromptEl  = $('custom-prompt-input');
+const statusPill      = $('status-pill');
+const statusLabel     = $('status-label');
+
+// ════════════════════════════════════════════════════════════════════════
+// DARK MODE
+// ════════════════════════════════════════════════════════════════════════
+function setTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  darkBtn.textContent = dark ? '☀️' : '🌙';
+  try { localStorage.setItem(LS.DARK, dark ? '1' : '0'); } catch {}
+}
+
+// Init from saved preference
+const savedDark = (() => { try { return localStorage.getItem(LS.DARK) === '1'; } catch { return false; } })();
+setTheme(savedDark);
+
+darkBtn.addEventListener('click', () => {
+  setTheme(document.documentElement.getAttribute('data-theme') !== 'dark');
+});
+
+// ════════════════════════════════════════════════════════════════════════
+// SETTINGS MODAL (custom system prompt)
+// ════════════════════════════════════════════════════════════════════════
+let customSystemPrompt = (() => { try { return localStorage.getItem(LS.PROMPT) || ''; } catch { return ''; } })();
+
+function openSettings()  {
+  customPromptEl.value = customSystemPrompt;
+  settingsOverlay.classList.add('open');
+  customPromptEl.focus();
+}
+function closeSettings() { settingsOverlay.classList.remove('open'); }
+
+settingsBtn.addEventListener('click', openSettings);
+settingsCancel.addEventListener('click', closeSettings);
+settingsOverlay.addEventListener('click', e => { if (e.target === settingsOverlay) closeSettings(); });
+
+settingsSave.addEventListener('click', () => {
+  customSystemPrompt = customPromptEl.value.trim();
+  try { localStorage.setItem(LS.PROMPT, customSystemPrompt); } catch {}
+  closeSettings();
+  addSysMsg(customSystemPrompt ? '✓ Instruções extras salvas' : 'Instruções extras removidas');
+});
 
 // ════════════════════════════════════════════════════════════════════════
 // RAM DETECTION
@@ -455,7 +647,7 @@ function detectRAM() {
           <option value="32">32 GB ou mais</option>
         </select>
       </div>`;
-    const s = document.getElementById('ram-sel');
+    const s = $('ram-sel');
     systemRamGB = parseInt(s.value);
     s.addEventListener('change', () => { systemRamGB = parseInt(s.value); renderCards(); });
   }
@@ -469,7 +661,7 @@ let selectedModelId = null;
 function getCompat(model) {
   if (!systemRamGB) return 'ok';
   const neededGB = model.ramMB / 1024;
-  const freeGB   = systemRamGB * 0.55;           // ~55% available to browser
+  const freeGB   = systemRamGB * 0.55;
   if (neededGB <= freeGB * 0.75) return 'ok';
   if (neededGB <= freeGB)        return 'warn';
   return 'err';
@@ -479,12 +671,12 @@ const COMPAT_LABEL = { ok:'✓ Compatível', warn:'⚠ No limite', err:'✗ Pesa
 
 function renderCards() {
   cardsEl.innerHTML = '';
-  selectedModelId = null;
+  selectedModelId   = null;
   loadBtnEl.disabled = true;
 
   CATEGORIES.forEach(cat => {
     const catLabel = document.createElement('div');
-    catLabel.className = 'cat-label';
+    catLabel.className   = 'cat-label';
     catLabel.textContent = cat.label;
     cardsEl.appendChild(catLabel);
 
@@ -492,16 +684,15 @@ function renderCards() {
     grid.className = 'model-grid';
 
     cat.models.forEach(m => {
-      const compat = getCompat(m);
+      const compat   = getCompat(m);
       const incompat = compat === 'err';
-
-      const card = document.createElement('div');
-      card.className = 'model-card' + (incompat ? ' incompatible' : '');
+      const card     = document.createElement('div');
+      card.className  = 'model-card' + (incompat ? ' incompatible' : '');
       card.dataset.id = m.id;
 
-      const tagsHtml = m.tags.map(t =>
-        `<span class="tag${t === m.hi ? ' hi' : ''}">${t}</span>`
-      ).join('');
+      const deviceBadge = m.device === 'wasm' ? '⚙️ WASM/CPU' : '⚡ WebGPU';
+      const baseBadge   = m.isBase ? `<span>·</span><span style="color:var(--warn)">base model</span>` : '';
+      const sizeLabel   = m.ramMB >= 1000 ? (m.ramMB / 1000).toFixed(1) + 'GB' : m.ramMB + 'MB';
 
       card.innerHTML = `
         <div class="card-top">
@@ -515,15 +706,16 @@ function renderCards() {
           <span class="compat-badge ${compat}">${COMPAT_LABEL[compat]}</span>
         </div>
         <div class="card-desc">${m.desc}</div>
-        <div class="card-tags">${tagsHtml}</div>
+        <div class="card-tags">${m.tags.map(t => `<span class="tag${t === m.hi ? ' hi' : ''}">${t}</span>`).join('')}</div>
         <div class="card-footer">
-          <span>💾 ~${m.ramMB >= 1000 ? (m.ramMB/1000).toFixed(1)+'GB' : m.ramMB+'MB'}</span>
+          <span>💾 ~${sizeLabel}</span>
           <span>·</span>
-          <span>⚡ WebGPU</span>
+          <span>${deviceBadge}</span>
           <span>·</span>
           <span>🔢 max ${m.maxTokens} tokens</span>
           <span>·</span>
           <span style="color:var(--muted2)">${m.dtype}</span>
+          ${baseBadge}
         </div>
         <div class="card-wm">${m.icon}</div>`;
 
@@ -531,7 +723,7 @@ function renderCards() {
         card.addEventListener('click', () => {
           document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
           card.classList.add('selected');
-          selectedModelId = m.id;
+          selectedModelId   = m.id;
           loadBtnEl.disabled = false;
         });
       }
@@ -546,11 +738,12 @@ function renderCards() {
 // ════════════════════════════════════════════════════════════════════════
 // CHAT STATE
 // ════════════════════════════════════════════════════════════════════════
-let generator    = null;
-let isGenerating = false;
-let history      = [];
-let activeModel  = null;
-const LS_KEY     = 'pocketchat_v3';
+let generator       = null;
+let isGenerating    = false;
+let history         = [];
+let activeModel     = null;
+let stopSignal      = { stop: false };
+let abortGeneration = null;
 
 // ════════════════════════════════════════════════════════════════════════
 // LOAD MODEL
@@ -564,29 +757,28 @@ loadBtnEl.addEventListener('click', async () => {
   loadingEl.classList.add('visible');
   loadIconEl.textContent  = model.icon;
   loadTitleEl.textContent = `Carregando ${model.name}…`;
-  loadTextEl.textContent  = `Iniciando WebGPU…\n~${model.ramMB}MB · ${model.dtype} · max ${model.maxTokens} tokens`;
+  loadTextEl.textContent  = `Iniciando…\n~${model.ramMB}MB · ${model.dtype} · max ${model.maxTokens} tokens`;
 
   try {
     generator = await pipeline('text-generation', model.hfId, {
-      dtype: model.dtype,
+      dtype:  model.dtype,
       device: model.device,
       progress_callback(info) {
         if (info.status === 'progress' && info.total) {
           const pct = Math.round((info.loaded / info.total) * 100);
-          loadBarEl.style.width = pct + '%';
-          loadTextEl.textContent = `Baixando… ${pct}%\n${(info.loaded/1e6).toFixed(0)} / ${(info.total/1e6).toFixed(0)} MB`;
+          loadBarEl.style.width  = pct + '%';
+          loadTextEl.textContent = `Baixando… ${pct}%\n${(info.loaded / 1e6).toFixed(0)} / ${(info.total / 1e6).toFixed(0)} MB`;
         }
         if (info.status === 'ready') {
-          loadBarEl.style.width = '100%';
+          loadBarEl.style.width  = '100%';
           loadTextEl.textContent = '✓ Pronto!';
         }
       },
     });
 
-    // Setup header
     hAvatarEl.textContent = model.icon;
     hTitleEl.textContent  = `PocketChat · ${model.name}`;
-    hSubEl.textContent    = `${model.org} · WebGPU · ${model.dtype} · max ${model.maxTokens} tok · 100% local`;
+    hSubEl.textContent    = `${model.org} · ${model.device.toUpperCase()} · ${model.dtype} · max ${model.maxTokens} tok · 100% local`;
 
     loadingEl.classList.remove('visible');
     appEl.classList.add('visible');
@@ -607,7 +799,7 @@ loadBtnEl.addEventListener('click', async () => {
     }
   } catch (err) {
     console.error(err);
-    loadTextEl.textContent = `❌ Erro ao carregar:\n${err.message}\n\nTente recarregar.`;
+    loadTextEl.textContent = `❌ Erro ao carregar:\n${err.message}\n\nTente recarregar a página.`;
   }
 });
 
@@ -618,15 +810,41 @@ const escHtml   = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 const scrollBot = () => { messagesEl.scrollTop = messagesEl.scrollHeight; };
 
 function setStatus(state, label) {
-  statusPill.className = 'status-pill ' + state;
+  statusPill.className    = 'status-pill ' + state;
   statusLabel.textContent = label;
 }
 
+function setGenerating(value) {
+  isGenerating           = value;
+  sendBtn.style.display  = value ? 'none' : 'flex';
+  stopBtn.style.display  = value ? 'flex'  : 'none';
+  inputEl.disabled       = value;
+}
+
 function saveHistory() {
-  try { localStorage.setItem(`${LS_KEY}_${activeModel?.id||''}`, JSON.stringify(history)); } catch {}
+  try { localStorage.setItem(LS.HIST(activeModel?.id || ''), JSON.stringify(history)); } catch {}
 }
 function loadSaved() {
-  try { return JSON.parse(localStorage.getItem(`${LS_KEY}_${activeModel?.id||''}`) || '[]'); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(LS.HIST(activeModel?.id || '')) || '[]'); } catch { return []; }
+}
+
+/** Attaches a copy button to a bot message body. getText() is called on click. */
+function attachCopyBtn(msgBody, getText) {
+  const btn = document.createElement('button');
+  btn.className   = 'copy-btn';
+  btn.textContent = '📋 copiar';
+  btn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(getText());
+      btn.textContent = '✓ copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '📋 copiar'; btn.classList.remove('copied'); }, 1800);
+    } catch {
+      btn.textContent = '✗ erro ao copiar';
+      setTimeout(() => { btn.textContent = '📋 copiar'; }, 1800);
+    }
+  });
+  msgBody.appendChild(btn);
 }
 
 function addSysMsg(text) {
@@ -635,18 +853,23 @@ function addSysMsg(text) {
   d.innerHTML = `<span>${escHtml(text)}</span>`;
   messagesEl.appendChild(d); scrollBot();
 }
+
 function addUserBubble(text) {
   const d = document.createElement('div');
   d.className = 'msg user';
   d.innerHTML = `<div class="msg-icon">Eu</div><div class="msg-body"><div class="bubble">${escHtml(text)}</div></div>`;
   messagesEl.appendChild(d); scrollBot();
 }
+
 function addBotBubbleStatic(text) {
   const d = document.createElement('div');
   d.className = 'msg bot';
   d.innerHTML = `<div class="msg-icon">AI</div><div class="msg-body"><div class="bubble">${escHtml(text)}</div></div>`;
+  const body  = d.querySelector('.msg-body');
+  attachCopyBtn(body, () => text);
   messagesEl.appendChild(d); scrollBot();
 }
+
 function createStreamingBotMsg() {
   const d = document.createElement('div');
   d.className = 'msg bot';
@@ -661,11 +884,13 @@ function createStreamingBotMsg() {
     </div>`;
   messagesEl.appendChild(d); scrollBot();
   return {
+    msgBody:      d.querySelector('.msg-body'),
     thinkBlock:   d.querySelector('.think-block'),
     thinkContent: d.querySelector('.think-content'),
     bubbleEl:     d.querySelector('.bubble'),
   };
 }
+
 function addTypingIndicator() {
   const id = 'typ-' + Date.now();
   const d  = document.createElement('div');
@@ -674,20 +899,29 @@ function addTypingIndicator() {
   messagesEl.appendChild(d); scrollBot();
   return id;
 }
+
 function autoResize() {
   inputEl.style.height = 'auto';
   inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
 }
+
 function restoreConversation() {
   history = loadSaved();
   if (!history.length) return false;
   messagesEl.innerHTML = '';
   addSysMsg('conversa restaurada');
   history.forEach(m => {
-    if (m.role === 'user') addUserBubble(m.content);
-    else if (m.role === 'assistant') addBotBubbleStatic(m.content);
+    if (m.role === 'user')      addUserBubble(m.content);
+    if (m.role === 'assistant') addBotBubbleStatic(m.content);
   });
   return true;
+}
+
+/** Builds a plain-text prompt for base (non-instruct) models. */
+function buildBasePrompt(hist) {
+  return hist.slice(-6)
+    .map(m => m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content}`)
+    .join('\n') + '\nAssistant:';
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -697,9 +931,7 @@ async function sendMessage() {
   const text = inputEl.value.trim();
   if (!text || isGenerating || !generator) return;
 
-  isGenerating = true;
-  sendBtn.disabled = true;
-  inputEl.disabled = true;
+  setGenerating(true);
   setStatus('typing', 'pensando…');
 
   addUserBubble(text);
@@ -709,34 +941,79 @@ async function sendMessage() {
   history.push({ role:'user', content:text });
   const typId = addTypingIndicator();
 
-  try {
-    const messages = [
-      { role:'system', content:SYSTEM_PROMPT },
-      ...history.slice(-10),
-    ];
+  // Per-generation stop control
+  const ctrl = { stop: false };
+  stopSignal      = ctrl;
+  abortGeneration = null;
 
-    document.getElementById(typId)?.remove();
-    const { thinkBlock, thinkContent, bubbleEl } = createStreamingBotMsg();
+  // Declare finalizeCallback so catch block can access it
+  let finalizeCallback = null;
+
+  try {
+    const finalSystemPrompt = customSystemPrompt
+      ? SYSTEM_PROMPT + '\n\n### EXTRA INSTRUCTIONS FROM USER:\n' + customSystemPrompt
+      : SYSTEM_PROMPT;
+
+    const input = activeModel.isBase
+      ? buildBasePrompt(history)
+      : [{ role:'system', content:finalSystemPrompt }, ...history.slice(-10)];
+
+    $(typId)?.remove();
+    const { msgBody, thinkBlock, thinkContent, bubbleEl } = createStreamingBotMsg();
     let rawBuffer = '';
     let thinkDone = false;
+    let finalized = false;
+
+    // Finalize streaming — idempotent, safe to call from catch or normal flow
+    finalizeCallback = function finalize() {
+      if (finalized) return;
+      finalized = true;
+
+      bubbleEl.classList.remove('streaming');
+      thinkBlock.classList.remove('think-streaming');
+
+      const tS = rawBuffer.indexOf('<think>');
+      const tE = rawBuffer.indexOf('</think>');
+      let finalReply = '';
+
+      if (tS !== -1 && tE !== -1) {
+        thinkContent.textContent = rawBuffer.slice(tS + 7, tE).trim();
+        thinkBlock.style.display = '';
+        finalReply = rawBuffer.slice(tE + 8).trim();
+      } else {
+        finalReply = rawBuffer.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      }
+
+      finalReply = finalReply
+        || (ctrl.stop ? bubbleEl.textContent.trim() : '')
+        || 'Hmm, não consegui gerar uma resposta. Tente novamente.';
+
+      bubbleEl.textContent = finalReply;
+      attachCopyBtn(msgBody, () => finalReply);
+
+      history.push({ role:'assistant', content:finalReply });
+      saveHistory();
+    };
 
     const streamer = new TextStreamer(generator.tokenizer, {
-      skip_prompt: true,
+      skip_prompt:        true,
       skip_special_tokens: true,
       callback_function(token) {
+        if (ctrl.stop) return; // Ignore tokens after stop
         rawBuffer += token;
+
         if (!thinkDone) {
           const tS = rawBuffer.indexOf('<think>');
           const tE = rawBuffer.indexOf('</think>');
           if (tS !== -1 && tE !== -1) {
             thinkDone = true;
             thinkContent.textContent = rawBuffer.slice(tS + 7, tE).trim();
-            thinkBlock.style.display = '';
+            thinkBlock.style.display  = '';
             thinkBlock.classList.remove('think-streaming');
             bubbleEl.textContent = rawBuffer.slice(tE + 8).trim() || ' ';
           } else if (tS !== -1) {
             thinkContent.textContent = rawBuffer.slice(tS + 7).trim();
-            thinkBlock.style.display = '';
+            thinkBlock.style.display  = '';
           } else {
             thinkDone = true;
             bubbleEl.textContent = rawBuffer.trim() || ' ';
@@ -749,56 +1026,62 @@ async function sendMessage() {
       },
     });
 
-    await generator(messages, {
-      max_new_tokens: activeModel.maxTokens,   // ← por modelo!
-      temperature: 0.7,
-      top_p: 0.9,
-      repetition_penalty: 1.1,
-      do_sample: true,
-      streamer,
+    // Race the generator against a stop promise so we can return immediately on stop
+    const stopPromise = new Promise((_, reject) => {
+      abortGeneration = () => reject(new Error('STOPPED'));
     });
 
-    // Finalize
-    bubbleEl.classList.remove('streaming');
-    thinkBlock.classList.remove('think-streaming');
-    const tS = rawBuffer.indexOf('<think>'), tE = rawBuffer.indexOf('</think>');
-    let finalReply = '';
-    if (tS !== -1 && tE !== -1) {
-      thinkContent.textContent = rawBuffer.slice(tS + 7, tE).trim();
-      thinkBlock.style.display = '';
-      finalReply = rawBuffer.slice(tE + 8).trim();
-    } else {
-      finalReply = rawBuffer.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-    }
-    finalReply = finalReply || 'Hmm, não consegui gerar uma resposta. Tente novamente.';
-    bubbleEl.textContent = finalReply;
+    await Promise.race([
+      generator(input, {
+        max_new_tokens:    activeModel.maxTokens,
+        temperature:       0.7,
+        top_p:             0.9,
+        repetition_penalty: 1.1,
+        do_sample:         true,
+        streamer,
+      }),
+      stopPromise,
+    ]);
 
-    history.push({ role:'assistant', content:finalReply });
-    saveHistory();
+    finalizeCallback();
 
   } catch (err) {
-    document.getElementById(typId)?.remove();
-    console.error(err);
-    addBotBubbleStatic('Ocorreu um erro ao gerar a resposta. Tente novamente.');
+    if (err.message === 'STOPPED') {
+      // User stopped — finalize with whatever was generated so far
+      finalizeCallback?.();
+    } else {
+      console.error(err);
+      $(typId)?.remove();
+      addBotBubbleStatic('Ocorreu um erro ao gerar a resposta. Tente novamente.');
+    }
   } finally {
-    isGenerating = false;
-    sendBtn.disabled = false;
-    inputEl.disabled = false;
+    abortGeneration = null;
+    setGenerating(false);
     setStatus('ready', 'pronto');
     inputEl.focus();
   }
 }
 
 // ════════════════════════════════════════════════════════════════════════
+// STOP BUTTON
+// ════════════════════════════════════════════════════════════════════════
+stopBtn.addEventListener('click', () => {
+  stopSignal.stop = true;   // Freeze UI updates from streamer
+  abortGeneration?.();      // Resolve the race immediately
+});
+
+// ════════════════════════════════════════════════════════════════════════
 // CLEAR / SWITCH
 // ════════════════════════════════════════════════════════════════════════
 clearBtn.addEventListener('click', () => {
   history = [];
-  try { localStorage.removeItem(`${LS_KEY}_${activeModel?.id||''}`); } catch {}
+  try { localStorage.removeItem(LS.HIST(activeModel?.id || '')); } catch {}
   messagesEl.innerHTML = '';
   addSysMsg('conversa apagada');
-  addBotBubbleStatic('Tudo limpo! Como posso te ajudar?');
-  history = [{ role:'assistant', content:'Tudo limpo! Como posso te ajudar?' }];
+  const welcome = 'Tudo limpo! Como posso te ajudar?';
+  addBotBubbleStatic(welcome);
+  history = [{ role:'assistant', content:welcome }];
+  saveHistory();
 });
 
 switchBtn.addEventListener('click', () => {
